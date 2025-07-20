@@ -1,33 +1,46 @@
 "use client";
 
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { ArrowLeft, Building2, Mail, Lock, MapPin } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { ArrowLeft, Building2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 
+/** ---------- 共通ログインボタン ---------- **/
+interface LoginButtonProps {
+  mode: "login" | "signup";
+  label: string;
+  redirectTo?: string;
+  variant?: "default" | "secondary";
+}
+function LoginButton({
+  mode,
+  label,
+  redirectTo = "/hotel-dashboard",
+  variant = "default",
+}: LoginButtonProps) {
+  const action = mode === "signup" ? "signup" : "login";
+  const url = `/api/auth/${action}?returnTo=${encodeURIComponent(redirectTo)}`;
+
+  return (
+    <Button variant={variant} className="w-full" onClick={() => (location.href = url)}>
+      {label}
+    </Button>
+  );
+}
+
+/** ---------- 画面本体 ---------- **/
 interface HotelLoginProps {
   onBack: () => void;
 }
 
 export default function HotelLogin({ onBack }: HotelLoginProps) {
-  const [isLogin, setIsLogin] = useState(true);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [hotelName, setHotelName] = useState("");
-  const [address, setAddress] = useState("");
-  const [phone, setPhone] = useState("");
-  const router = useRouter();
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Mock authentication - in real app, this would connect to your auth system
-    localStorage.setItem("userType", "hotel");
-    localStorage.setItem("userEmail", email);
-    router.push("/hotel-dashboard");
-  };
+  const router = useRouter(); // ★ ログアウト後などの戻り先に利用可
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-100 flex items-center justify-center p-4">
@@ -42,126 +55,27 @@ export default function HotelLogin({ onBack }: HotelLoginProps) {
               <span className="font-semibold text-blue-600">Hotel Portal</span>
             </div>
           </div>
-          <CardTitle className="text-2xl text-center">
-            {isLogin ? "Welcome Back!" : "Register Your Hotel"}
-          </CardTitle>
+          <CardTitle className="text-2xl text-center">Hotel Account</CardTitle>
           <CardDescription className="text-center">
-            {isLogin
-              ? "Sign in to your hotel account to post cleaning jobs"
-              : "Register your hotel to start posting cleaning jobs"
-            }
+            Auth0 を使ってログイン / 新規登録
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {!isLogin && (
-              <>
-                <div className="space-y-2">
-                  <Label htmlFor="hotelName">Hotel Name</Label>
-                  <Input
-                    id="hotelName"
-                    type="text"
-                    placeholder="Enter your hotel name"
-                    value={hotelName}
-                    onChange={(e) => setHotelName(e.target.value)}
-                    required
-                  />
-                </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="address">Hotel Address</Label>
-                  <div className="relative">
-                    <MapPin className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                    <Input
-                      id="address"
-                      type="text"
-                      placeholder="Enter hotel address"
-                      className="pl-10"
-                      value={address}
-                      onChange={(e) => setAddress(e.target.value)}
-                      required
-                    />
-                  </div>
-                </div>
-              </>
-            )}
+        <CardContent className="space-y-6">
+          {/* サインイン */}
+          <LoginButton
+            mode="login"
+            label="Sign in with Email / SSO"
+            redirectTo="/hotel-dashboard"
+          />
 
-            <div className="space-y-2">
-              <Label htmlFor="email">Business Email</Label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="Enter business email"
-                  className="pl-10"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-              </div>
-            </div>
-
-            {!isLogin && (
-              <div className="space-y-2">
-                <Label htmlFor="phone">Business Phone</Label>
-                <Input
-                  id="phone"
-                  type="tel"
-                  placeholder="Enter business phone number"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  required
-                />
-              </div>
-            )}
-
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="Enter your password"
-                  className="pl-10"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
-              </div>
-            </div>
-
-            <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700">
-              {isLogin ? "Sign In" : "Register Hotel"}
-            </Button>
-          </form>
-
-          <div className="mt-6 text-center">
-            <Button
-              variant="link"
-              onClick={() => setIsLogin(!isLogin)}
-              className="text-sm"
-            >
-              {isLogin
-                ? "New hotel? Register here"
-                : "Already registered? Sign in"
-              }
-            </Button>
-          </div>
-
-          {!isLogin && (
-            <div className="mt-4 p-3 bg-blue-50 rounded-lg">
-              <h4 className="font-semibold text-blue-800 mb-2">Benefits for Hotels:</h4>
-              <ul className="text-sm text-blue-700 space-y-1">
-                <li>• Post cleaning job requirements</li>
-                <li>• Access to vetted cleaners</li>
-                <li>• Automated matching system</li>
-                <li>• Secure contract management</li>
-                <li>• Quality assurance tracking</li>
-              </ul>
-            </div>
-          )}
+          {/* 新規登録 */}
+          <LoginButton
+            mode="signup"
+            label="Register your Hotel"
+            redirectTo="/hotel-dashboard"
+            variant="secondary"
+          />
         </CardContent>
       </Card>
     </div>
